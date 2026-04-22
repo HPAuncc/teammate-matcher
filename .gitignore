@@ -1,3 +1,21 @@
+# ── Project-specific ──────────────────────────────────────────────────────────
+
+# Raw survey data — anonymous but kept local; never publish
+# Contains exact submission timestamps (quasi-identifier in a class of 31)
+data/raw_survey_responses.csv
+data/raw_survey_data.csv
+data/raw/
+
+# Team assignment outputs contain row indices tied to submission order
+outputs/team_assignments/*.csv
+
+# AI developer context — internal notes, not for public repo
+CLAUDE.md
+
+# macOS
+.DS_Store
+
+# ── Python ────────────────────────────────────────────────────────────────────
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
