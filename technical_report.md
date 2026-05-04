@@ -28,7 +28,9 @@ identified latent skill archetypes via soft membership probabilities. The
 ambiguity-flag mechanism (max posterior < 0.60) returned zero borderline
 cases on this cohort: with $N = 31$ and full-covariance components, GMM
 converges to near-deterministic posteriors. The mechanism is correct; this
-cohort simply does not exercise it (Section 4.5.4). Principal Component Analysis confirmed that availability and work-style
+cohort simply does not exercise it (Section 4.5.4).
+
+Principal Component Analysis confirmed that availability and work-style
 are the primary axes of student differentiation (PC1 = day-of-week
 availability, 15.8%; PC2 = conflict/meeting style, 13.5%), with
 self-rated skills appearing only as a secondary axis from PC3 onward.
@@ -137,7 +139,9 @@ The survey was deployed via Google Forms and organized into five sections
 - **Checkbox multi-select for schedule** allows expression of disjoint
   availability (e.g., "weekends only" or "MWF plus evenings").
 - **Optional GPA** was selected to reduce response pressure; we will see in
-  Section 5 that GPA has minimal effect on assignments.
+  Section 5.4 that GPA has a *moderate* (not negligible) effect on assignments,
+  motivating a deployment protocol that presents both with-GPA and without-GPA
+  configurations to the instructor.
 - **"Prefer not to say" option** for GPA explicitly signals that the student
   chose not to respond (distinguishable from accidental skip).
 
@@ -323,9 +327,12 @@ to a valid category.
 
 **Trade-off:** Median imputation biases imputed rows toward the cohort's
 modal response. With 29 of 31 students having a valid GPA and the cohort
-concentrated in the 3.5–4.0 band, the median value (4) is the most common
-observed value, so imputation has minimal effect. Section 5.4 presents the
-sensitivity analysis confirming this.
+concentrated in the 3.5–4.0 band, the median value (4) is also the modal
+observed value — so the two imputed rows are statistically indistinguishable
+from the majority of the cohort on this feature. (Note: this is about the
+*choice of imputation strategy*; the separate question of whether GPA
+itself is influential as a feature is addressed in Section 5.4, where the
+answer is "moderately so.")
 
 ### Step 8 — Min-Max Normalization
 
@@ -863,9 +870,11 @@ would otherwise be drowned out.
   misspecification, but the component means may be shifted by skewness. BIC
   selection partially mitigates overfitting risk.
 - **Missing GPA ≈ random.** Median imputation assumes missingness is not
-  correlated with a specific GPA range. "Prefer not to say" may signal a
-  lower band more often than random; the sensitivity analysis confirms this
-  does not meaningfully affect assignments.
+  correlated with a specific GPA range. "Prefer not to say" may plausibly
+  signal a lower band more often than random, in which case median
+  imputation overestimates those students' GPAs. With only 2 missing rows
+  out of 31, the bias from this assumption is small in absolute terms, but
+  it would scale with the missingness rate in a larger deployment.
 
 ### 7.3 Evaluation Limitations
 
@@ -888,11 +897,14 @@ defaults carry real consequences.
 ### 8.1 Human-in-the-Loop Design
 
 The system is explicitly designed as a **recommendation tool**, not an
-autonomous decision-maker. Its output is a ranked list of team
-configurations with interpretable metrics (schedule overlap, skill
-coverage). The instructor makes final decisions and can override based on
-context the algorithm cannot see — known interpersonal conflicts, disability
-accommodations, previous team history, or external commitments.
+autonomous decision-maker. Its output is a *set* of candidate team
+configurations (one per model) with interpretable metrics (schedule
+overlap, skill coverage). No single composite score is reported because
+the six metrics deliberately disagree across the similarity and
+complementarity objectives. The instructor makes final decisions and can
+override based on context the algorithm cannot see — known interpersonal
+conflicts, disability accommodations, previous team history, or external
+commitments.
 
 This is a deliberate design choice to preserve instructor judgment and
 prevent algorithmic rigidity from harming students [3].
@@ -901,9 +913,12 @@ prevent algorithmic rigidity from harming students [3].
 
 **Demographic variables are explicitly excluded.** The survey does not
 collect race, gender, ethnicity, nationality, disability, or socioeconomic
-status. GPA is the only potentially demographic-correlated variable,
-collected optionally, and is treated as one of 50 features with minimal
-individual weight (confirmed in Section 5.4).
+status. GPA is the only potentially demographic-correlated variable, and
+it is collected optionally with an explicit "Prefer not to say" option.
+Section 5.4 shows GPA has a *moderate* effect on assignments (ARI = 0.34
+between the with- and without-GPA clusterings) — meaningful enough that
+we recommend instructors review both configurations rather than treating
+GPA inclusion as a default.
 
 **Year-in-school inclusion.** We do include `year` (Freshman–Graduate), which
 could in principle produce teams stratified by seniority. Inspection of
@@ -971,12 +986,15 @@ finding: **the choice of "best" model depends on what you optimize for.**
 
 1. **Hungarian Algorithm is the recommended deployment model** — it
    guarantees balanced team sizes (a practical requirement that no
-   standard clustering algorithm satisfies) and achieves the highest
-   skill coverage (8/8 dimensions per team).
-2. **GMM complements Hungarian** rather than replacing it. GMM surfaces
-   skill-archetype ambiguity that helps instructors fine-tune borderline
-   assignments; its soft probabilities add interpretability that the
-   hard Hungarian assignments lack.
+   standard clustering algorithm satisfies) and ties for the highest
+   skill coverage at 7.875/8 dimensions per team.
+2. **GMM complements Hungarian** rather than replacing it. GMM identifies
+   latent skill archetypes via soft component assignments, and its
+   ambiguity-flag mechanism (max posterior < 0.60) is built to surface
+   borderline students for instructor review. On this cohort GMM
+   converged sharply and the flag returned zero students (Section 4.5.4),
+   but the mechanism remains useful for larger or more heterogeneous
+   future deployments.
 3. **Schedule availability and work-style dominate student
    differentiation; self-rated skills are a weaker, lower-variance
    axis** (PCA finding). PC1 is a day-of-week availability axis
@@ -1030,9 +1048,13 @@ teammate-matcher/
 │   ├── 04_models_3_4.ipynb               # Hungarian + GMM
 │   └── 05_evaluation.ipynb               # comparison + PCA biplot
 └── outputs/
-    ├── comparison_metrics.png
-    ├── pca_biplot.png
-    ├── evaluation_metrics.csv
+    ├── pipeline_diagram.png              # methodology overview
+    ├── schedule_heatmap.png              # cohort availability matrix
+    ├── pca_biplot.png                    # 8-loading PCA biplot
+    ├── comparison_metrics.png            # six-metric bar chart
+    ├── poster_comparison_table.png       # poster-ready table
+    ├── gmm_ambiguity.png                 # GMM soft-assignment heatmap
+    ├── evaluation_metrics.csv            # tabular metrics
     └── team_assignments/                 # gitignored
 ```
 
