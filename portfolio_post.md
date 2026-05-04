@@ -1,7 +1,7 @@
 # Who Picks Your Team? Building a Fairer Way to Form Student Project Groups
 
 *Hampton Abbott & Carly Castillo — DTSC 2302, University of North Carolina at Charlotte*
-*Spring 2026 · ~1,800 words · 8-minute read*
+*Spring 2026*
 
 ---
 
