@@ -22,10 +22,13 @@ were preprocessed through a nine-step pipeline producing 50 features across two
 feature sets: *compatibility features* (availability + work style, used for
 similarity-based models) and *complementarity features* (8 skill dimensions,
 used for diversity-based GMM). Hungarian Assignment produced the most
-practically deployable configuration — teams of 3–5 students with complete skill
-coverage (8/8 dimensions per team) — while GMM identified latent skill
-archetypes with soft membership probabilities that flag ambiguous students for
-instructor review. Principal Component Analysis confirmed that availability and work-style
+practically deployable configuration — balanced teams of 3–6 students with
+near-complete skill coverage (7.875/8 dimensions per team) — while GMM
+identified latent skill archetypes via soft membership probabilities. The
+ambiguity-flag mechanism (max posterior < 0.60) returned zero borderline
+cases on this cohort: with $N = 31$ and full-covariance components, GMM
+converges to near-deterministic posteriors. The mechanism is correct; this
+cohort simply does not exercise it (Section 4.5.4). Principal Component Analysis confirmed that availability and work-style
 are the primary axes of student differentiation (PC1 = day-of-week
 availability, 15.8%; PC2 = conflict/meeting style, 13.5%), with
 self-rated skills appearing only as a secondary axis from PC3 onward.
@@ -153,6 +156,17 @@ The survey was deployed via Google Forms and organized into five sections
 students, the target deployment scale. It limits statistical generalization,
 but the goal is not population inference — it is optimal team formation within
 this cohort.
+
+**Cohort availability profile.** The 11-dimensional availability vector for
+each student — 7 day-of-week binaries plus 4 time-of-day binaries — exhibits
+substantial heterogeneity, which is the variance the similarity-based models
+operate on. Weekday afternoons and evenings are dense; weekends and the
+late-night slot are sparse:
+
+![Cohort schedule heatmap. 31 students sorted by total availability (most-available rows at top). Saturday, Sunday, and Late Night are visibly sparser than weekdays and afternoon/evening slots.](outputs/schedule_heatmap.png)
+
+This descriptive view foreshadows the PCA finding in Section 6: day-of-week
+availability is the primary axis along which students differentiate.
 
 ### 2.4 Anonymity & Quasi-Identifier Analysis
 
@@ -371,6 +385,15 @@ analytical artifacts useful for ethics analysis but not clustering features.
 
 ## 4. Models & Methodology
 
+The end-to-end methodology is summarized below. Raw survey responses pass
+through the 9-step preprocessing pipeline (Section 3) and are split into two
+feature sets (compatibility and complementarity). Three models operate on
+the compatibility set; one model operates on the complementarity set. All
+four are evaluated on the same six metrics (Section 5), and the ranked
+configurations are passed to the instructor for final review:
+
+![End-to-end methodology diagram. Survey → Preprocessing → two feature sets → four models (K-Means, Agglomerative, Hungarian, GMM) → six evaluation metrics + PCA audit → instructor review. Hungarian and GMM are flagged as beyond-class methods.](outputs/pipeline_diagram.png)
+
 ### 4.1 Why Four Models?
 
 No single clustering algorithm naturally handles both matching objectives.
@@ -546,11 +569,40 @@ $\hat{L}$ is the maximum likelihood. Lower BIC is better; the penalty term
 prevents overfitting. We sweep $k \in [2, 8]$ and select the minimizing
 value (see `notebooks/04_models_3_4.ipynb` for the BIC curve).
 
-### 4.5.4 Ambiguity Flagging
+### 4.5.4 Ambiguity Flagging — Mechanism and Empirical Result
 
 Students with $\max_j \gamma_{ij} < 0.60$ are flagged as *ambiguous* in the
 output. This is a conservative threshold — it surfaces students for
 instructor review rather than letting the algorithm decide.
+
+**Empirical result on this cohort.** With $N = 31$, $k = 8$ (selected by BIC),
+and full covariance matrices, GMM converges to extremely sharp posterior
+distributions. The maximum component probability is $\geq 0.999$ for every
+single student in the cohort:
+
+![GMM soft-assignment heatmap (31 × 8). Rows are students sorted by dominant component, columns are the 8 latent skill archetypes, color is posterior probability. Every student maps to exactly one archetype with probability ≈ 1.0; the off-diagonal entries are visually empty.](outputs/gmm_ambiguity.png)
+
+| Quantity | Value |
+|---|---|
+| min($\max_j \gamma_{ij}$) | $\approx 1.00$ |
+| median($\max_j \gamma_{ij}$) | $\approx 1.00$ |
+| Students with $\max_j \gamma_{ij} < 0.60$ | **0 / 31** |
+| Students with $\max_j \gamma_{ij} \geq 0.80$ | 31 / 31 |
+
+**Interpretation.** This is not a failure of the ambiguity-flag mechanism;
+it is a property of the data. With 31 observations in 8 dimensions and 8
+mixture components estimated under full covariance, each component has
+sufficient flexibility to fit its members' skill profiles tightly. The
+likelihood ratio between the dominant component and any other component
+becomes very large, driving posterior probabilities to near-1.0. This is a
+known small-sample behavior of unconstrained-covariance GMMs.
+
+**Future work.** Two natural extensions would activate the ambiguity flag:
+(a) running GMM with `covariance_type='tied'` or `'spherical'`, which
+constrains components to share covariance structure and produces softer
+posteriors; (b) running on a larger combined cohort (multiple class
+sections), where the data-to-parameter ratio is less extreme. The
+mechanism is correct; this cohort simply does not exercise it.
 
 ---
 
@@ -898,10 +950,12 @@ requirement in the public portfolio post.
 Even with human-in-the-loop design, the existence of an algorithmic
 recommendation creates anchoring pressure — instructors may accept the
 recommendation by default rather than scrutinize it. To counter this, the
-system outputs include explicit "ambiguous student" flags from GMM (students
-with soft membership probabilities below 0.60) that require human
-adjudication, and multiple model configurations so no single result is
-privileged.
+system surfaces multiple model configurations rather than a single ranked
+output, and reports an "ambiguous student" flag from GMM (students with
+soft membership probability below 0.60) intended to require human
+adjudication. As reported in Section 4.5.4, this cohort produced zero
+flagged students, but the mechanism remains in the system for future
+deployments where GMM converges less sharply.
 
 ---
 
