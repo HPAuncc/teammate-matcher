@@ -1,9 +1,7 @@
 # Technical Report: Group Project Teammate Matcher
 
-**Course:** DTSC 2302 — Data Science II
-**Institution:** University of North Carolina at Charlotte
-**Date:** May 2026
-**Repository:** [github.com/HPAuncc/teammate-matcher](https://github.com/HPAuncc/teammate-matcher)
+*Hampton Abbott & Carly Castillo — DTSC 2302, University of North Carolina at Charlotte*
+*Spring 2026*
 
 ---
 
@@ -1137,6 +1135,13 @@ pp. 325–340, 1987.
 ### AI Tool Transparency
 
 **Claude (Anthropic)** was used as a coding assistant throughout development.
+
+### Repository
+
+Full source code, preprocessing pipeline, model wrappers, evaluation
+metrics, Jupyter notebooks, and all generated figures are available at:
+
+> [**github.com/HPAuncc/teammate-matcher**](https://github.com/HPAuncc/teammate-matcher)
 
 ---
 
