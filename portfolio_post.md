@@ -40,6 +40,10 @@ The third question is the most important one for understanding what the algorith
 
 ## How we built it
 
+The whole pipeline, end to end, looks like this:
+
+![Pipeline diagram showing the flow from survey to preprocessing to two feature sets (compatibility and complementarity) feeding four models (K-Means, Agglomerative, Hungarian, GMM) which produce six metrics that an instructor reviews to make the final team-assignment decision.](outputs/pipeline_diagram.png)
+
 We deployed an anonymous Google Forms survey to 31 students in a single section of DTSC 2302. The survey collected 35 items across five domains: schedule and availability, technical skills (8 dimensions, self-rated 1–5), work style, communication preferences, and a small self-assessment block. After preprocessing — checkbox expansion, ordinal encoding, one-hot encoding, Min-Max normalization, and a privacy-preserving row shuffle — we ended up with 50 features per student and zero missing values.
 
 We then ran four different models on the cleaned data, deliberately chosen to span the design space:
@@ -53,7 +57,7 @@ The first three models were applied to a *similarity* feature set (availability 
 
 We evaluated all four models on six metrics: three algorithmic (Silhouette Score, Davies–Bouldin, Calinski–Harabasz) that measure how cleanly clustered the partition is, and three domain-specific (intra-team skill variance, schedule overlap via Jaccard similarity, and skill coverage) that measure whether the resulting teams are actually deployable.
 
-![Comparison of the four models across all six evaluation metrics. Higher is better for silhouette, Calinski-Harabasz, schedule overlap, and skill coverage; lower is better for Davies-Bouldin; skill variance is context-dependent.](outputs/comparison_metrics.png)
+![Side-by-side comparison of all four models on the six evaluation metrics. The Hungarian Algorithm row is highlighted as the recommended deployment model; bold green values mark the best score in each column. GMM wins all three algorithmic metrics (Silhouette, Davies-Bouldin, Calinski-Harabasz); K-Means wins Schedule Overlap; K-Means and Hungarian tie for the highest Skill Coverage at 7.875 / 8.](outputs/poster_comparison_table.png)
 
 ---
 
@@ -63,7 +67,13 @@ Three findings stood out, and not all of them were the ones we expected.
 
 **1. The Hungarian Algorithm is the model we'd actually deploy.** It is the only one of the four that guaranteed every team contained between three and six students — the other models routinely produced oversized teams (one K-Means cluster contained 10 students) or two-person teams too small to cover the project's required skills. It also tied for the highest *skill coverage* (7.875 out of 8 skill dimensions per team), meaning Hungarian-formed teams almost always had at least one member confident in each major skill area. Its silhouette score is the lowest of the four, which is the explicit cost of forcing balanced sizes — but for a deployment context, balanced and slightly-less-tight is far more useful than tight-but-unusable.
 
-**2. Schedule, not skill, is what separates students.** When we ran Principal Component Analysis on the full feature set, the first principal component (15.8% of variance) was dominated by day-of-week availability — weekend, Tuesday, and Thursday loadings positive; Monday loading negative. The second component (13.5%) was conflict-handling and meeting-mode preferences. **Self-rated skill features did not appear in the top loadings until the third principal component.**
+**2. Schedule, not skill, is what separates students.** Looking at the raw availability matrix gives the first hint:
+
+![Heatmap of the 31 students' availability across 7 days and 4 time-of-day slots. Students are sorted by total availability (most-available at top, least at bottom). Saturdays, Sundays, and Late Night are visibly sparser than weekdays and afternoons; the cohort is heavily concentrated in afternoon and evening windows.](outputs/schedule_heatmap.png)
+
+The heatmap shows uneven availability: weekday afternoons and evenings are dense, weekends and late-night slots are sparse, and individual students vary widely in how many slots they can offer. That heterogeneity is exactly the signal a clustering algorithm can latch onto.
+
+When we ran Principal Component Analysis on the full feature set to formalize that intuition, the first principal component (15.8% of variance) was dominated by day-of-week availability — weekend, Tuesday, and Thursday loadings positive; Monday loading negative. The second component (13.5%) was conflict-handling and meeting-mode preferences. **Self-rated skill features did not appear in the top loadings until the third principal component.**
 
 ![PCA biplot showing 31 students in PC1–PC2 space, colored by Hungarian team assignment. Top 8 feature loadings are shown as red arrows. PC1 is dominated by day-of-week availability; PC2 is dominated by conflict and meeting-mode preferences.](outputs/pca_biplot.png)
 
@@ -72,6 +82,14 @@ This is a pedagogically important finding. It means that within this cohort, stu
 **3. GPA is not a neutral feature.** We were curious whether including GPA in the feature set would meaningfully change team assignments. We ran K-Means with and without `gpa_band` and compared the resulting cluster labels using the Adjusted Rand Index — a standard measure of how similar two partitions are, where 1.0 is identical and 0.0 is random. The score was **0.34** — moderately low. Removing GPA actually *improved* the schedule-overlap metric slightly (0.628 versus 0.604). In other words, GPA was actively pulling the clustering away from its primary objective.
 
 This was the most ethically significant finding in the project. GPA is a demographically loaded variable in the U.S. educational system [6, 7] — correlated with socioeconomic status, prior preparation, and access to academic support. A modeling decision as innocuous-sounding as "let's include GPA as one of fifty features" turned out to reshape teams measurably, and not in a direction that helped. We had assumed GPA would be a passive ingredient. It wasn't.
+
+**4. GMM produced sharp, not soft, archetypes.** One of the design promises of GMM is that it returns *probabilistic* assignments — a vector of probabilities over latent components for each student — and we built an "ambiguity flag" intended to surface students whose maximum component probability fell below 0.60. In a larger or more diverse cohort, those flagged students would get instructor review.
+
+In our cohort, **zero students were flagged.** Every single one of the 31 students locked tightly onto exactly one of the eight latent skill archetypes:
+
+![GMM soft-assignment heatmap. Each row is a student, each column is one of the 8 latent skill archetypes the model identified, and color intensity is the posterior probability that the student belongs to that archetype. Every student maps to exactly one archetype with probability ≈ 1.0 — there are no off-diagonal blends.](outputs/gmm_ambiguity.png)
+
+This is not a failure of the algorithm; it is a property of the data. With 31 students, 8 skill features, and 8 mixture components estimated with full covariance matrices, GMM has enough flexibility to fit each archetype tightly to its members. The ambiguity-flag mechanism still works as designed — it just had nothing to surface in this run. In a larger sample, or if we had restricted the covariance type to force softer assignments, we'd expect a meaningful number of borderline cases. The honest portfolio-post version of this finding is: *the capability is real, the result on this cohort was clean, and a future run on richer data is the test that would actually exercise it.*
 
 ---
 
