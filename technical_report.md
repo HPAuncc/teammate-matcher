@@ -44,7 +44,7 @@ rather than combining feature sets.
 The success of academic group projects depends heavily on team composition. Prior
 research has established that random assignment and student self-selection both
 produce suboptimal outcomes — including uneven distribution of work, scheduling
-conflicts, and mismatched work styles [1]. These issues hinder the pedagogical
+conflicts, and mismatched work styles (Kyprianidou et al., 2012). These issues hinder the pedagogical
 goals of collaborative assignments and cause measurable frustration among
 students.
 
@@ -471,7 +471,7 @@ Standard clustering has a critical practical flaw for team formation: a
 K-Means cluster containing 8 students cannot be used as a single team of 4
 without post-hoc reshuffling that ignores the cluster structure. The
 Hungarian Algorithm (also called the *Linear Sum Assignment* algorithm)
-solves the balanced assignment problem directly [2].
+solves the balanced assignment problem directly (Kuhn, 1955).
 
 **Problem setup.** Given $N$ students and $k$ teams with target size
 $t = \lfloor N / k \rfloor$:
@@ -502,7 +502,7 @@ $t$ students — guaranteeing balanced team sizes.
 **Algorithm complexity:** The Hungarian Algorithm solves the assignment
 problem in $\mathcal{O}(N^3)$ via dynamic programming over alternating
 augmenting paths. We use `scipy.optimize.linear_sum_assignment`, which
-implements the Jonker-Volgenant refinement.
+implements the Jonker-Volgenant refinement (Jonker & Volgenant, 1987).
 
 **Handling non-divisible $N$:** If $N \bmod k \neq 0$, some students remain
 unassigned after the balanced round. These *overflow* students are assigned
@@ -521,7 +521,8 @@ the complementarity objective.
 
 ### 4.5.1 Formulation
 
-GMM models the data as a mixture of $k$ multivariate Gaussian distributions:
+The formulation below follows Bishop (2006, Chapter 9). GMM models the data
+as a mixture of $k$ multivariate Gaussian distributions:
 
 $$p(x) = \sum_{j=1}^{k} \pi_j \, \mathcal{N}(x \mid \mu_j, \Sigma_j)$$
 
@@ -905,7 +906,7 @@ conflicts, disability accommodations, previous team history, or external
 commitments.
 
 This is a deliberate design choice to preserve instructor judgment and
-prevent algorithmic rigidity from harming students [3].
+prevent algorithmic rigidity from harming students (Akgun & Greenhow, 2022).
 
 ### 8.2 Fairness Considerations
 
@@ -1092,49 +1093,67 @@ print_comparison_table(eval_df)
 
 ## 11. References & AI Transparency
 
-### Works Cited
+### References
 
-[1] M. Kyprianidou, S. Demetriadis, T. Tsiatsos, and A. Pombortsis,
-"Group formation based on learning styles: can it improve students'
-teamwork?" *Educational Technology Research and Development*, vol. 60,
-pp. 83–110, 2012.
+Akgun, S., & Greenhow, C. (2022). Artificial intelligence in education:
+Addressing ethical challenges in K-12 settings. *AI and Ethics*, *2*,
+431–440. https://pmc.ncbi.nlm.nih.gov/articles/PMC8455229/
 
-[2] H. W. Kuhn, "The Hungarian method for the assignment problem,"
-*Naval Research Logistics Quarterly*, vol. 2, no. 1–2, pp. 83–97, 1955.
+Bishop, C. M. (2006). *Pattern recognition and machine learning*. Springer.
 
-[3] S. Akgun and C. Greenhow, "Artificial intelligence in education:
-Addressing ethical challenges in K-12 settings," *AI and Ethics*, vol. 2,
-2022. Available: https://pmc.ncbi.nlm.nih.gov/articles/PMC8455229/
+Harris, C. R., Millman, K. J., van der Walt, S. J., Gommers, R., Virtanen,
+P., Cournapeau, D., Wieser, E., Taylor, J., Berg, S., Smith, N. J., Kern,
+R., Picus, M., Hoyer, S., van Kerkwijk, M. H., Brett, M., Haldane, A., del
+Río, J. F., Wiebe, M., Peterson, P., … Oliphant, T. E. (2020). Array
+programming with NumPy. *Nature*, *585*(7825), 357–362.
+https://doi.org/10.1038/s41586-020-2649-2
 
-[4] C. M. Bishop, *Pattern Recognition and Machine Learning*. Springer,
-2006. (GMM formulation, Chapter 9.)
+Hunter, J. D. (2007). Matplotlib: A 2D graphics environment. *Computing
+in Science & Engineering*, *9*(3), 90–95.
+https://doi.org/10.1109/MCSE.2007.55
 
-[5] R. Jonker and A. Volgenant, "A shortest augmenting path algorithm for
-dense and sparse linear assignment problems," *Computing*, vol. 38,
-pp. 325–340, 1987.
+Jonker, R., & Volgenant, A. (1987). A shortest augmenting path algorithm
+for dense and sparse linear assignment problems. *Computing*, *38*(4),
+325–340. https://doi.org/10.1007/BF02278710
 
-### Software & Libraries
+Kuhn, H. W. (1955). The Hungarian method for the assignment problem.
+*Naval Research Logistics Quarterly*, *2*(1–2), 83–97.
+https://doi.org/10.1002/nav.3800020109
 
-- **Python 3.12** — [python.org](https://python.org)
-- **pandas** — McKinney, W. "Data Structures for Statistical Computing in
-  Python." *Proc. 9th Python in Science Conference*, 2010.
-- **NumPy** — Harris, C. R., et al. "Array programming with NumPy."
-  *Nature* 585, 357–362 (2020).
-- **scikit-learn** — Pedregosa, F., et al. "Scikit-learn: Machine Learning
-  in Python." *JMLR* 12, pp. 2825–2830, 2011. (K-Means, Agglomerative,
-  GMM, PCA, and all evaluation metrics.)
-- **SciPy** — Virtanen, P., et al. "SciPy 1.0: Fundamental Algorithms for
-  Scientific Computing in Python." *Nature Methods* 17, 261–272 (2020).
-  (Hungarian Algorithm via `scipy.optimize.linear_sum_assignment`;
-  hierarchical linkage via `scipy.cluster.hierarchy`.)
-- **matplotlib** — Hunter, J. D. "Matplotlib: A 2D graphics environment."
-  *Computing in Science & Engineering* 9, 90–95, 2007.
-- **seaborn** — Waskom, M. L. "seaborn: statistical data visualization."
-  *JOSS* 6 (60), 3021, 2021.
+Kyprianidou, M., Demetriadis, S., Tsiatsos, T., & Pombortsis, A. (2012).
+Group formation based on learning styles: Can it improve students'
+teamwork? *Educational Technology Research and Development*, *60*(1),
+83–110. https://doi.org/10.1007/s11423-011-9215-4
+
+McKinney, W. (2010). Data structures for statistical computing in Python.
+In S. van der Walt & J. Millman (Eds.), *Proceedings of the 9th Python in
+Science Conference* (pp. 56–61).
+https://doi.org/10.25080/Majora-92bf1922-00a
+
+Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B.,
+Grisel, O., Blondel, M., Prettenhofer, P., Weiss, R., Dubourg, V.,
+Vanderplas, J., Passos, A., Cournapeau, D., Brucher, M., Perrot, M., &
+Duchesnay, E. (2011). Scikit-learn: Machine learning in Python. *Journal
+of Machine Learning Research*, *12*, 2825–2830.
+
+Python Software Foundation. (2024). *Python* (Version 3.12) [Computer
+software]. https://www.python.org/
+
+Virtanen, P., Gommers, R., Oliphant, T. E., Haberland, M., Reddy, T.,
+Cournapeau, D., Burovski, E., Peterson, P., Weckesser, W., Bright, J.,
+van der Walt, S. J., Brett, M., Wilson, J., Millman, K. J., Mayorov, N.,
+Nelson, A. R. J., Jones, E., Kern, R., Larson, E., … van Mulbregt, P.
+(2020). SciPy 1.0: Fundamental algorithms for scientific computing in
+Python. *Nature Methods*, *17*(3), 261–272.
+https://doi.org/10.1038/s41592-019-0686-2
+
+Waskom, M. L. (2021). seaborn: Statistical data visualization. *Journal
+of Open Source Software*, *6*(60), 3021.
+https://doi.org/10.21105/joss.03021
 
 ### AI Tool Transparency
 
-**Claude (Anthropic)** was used as a coding assistant throughout development.
+Claude (Anthropic) was used as a coding assistant throughout development.
 
 ### Repository
 

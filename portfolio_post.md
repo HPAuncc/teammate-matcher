@@ -20,7 +20,7 @@ That question turned into the *Teammate Matcher* — a recommendation tool, not 
 
 ## Why this matters beyond a class assignment
 
-It is tempting to file "team formation" under *minor logistical headache*, but the choice of who works with whom is pedagogically consequential. Group composition shapes who learns from whom, who gets credit, who carries silent labor, and — at the limit — who passes a course [1]. When those decisions are made by algorithm rather than by hand, the same set of questions that animates broader debates about AI in high-stakes domains shows up in miniature: Whose values are encoded in the model? Whose data does it use, and with what consent? Can the people affected by it understand what it's doing? [2, 3]
+It is tempting to file "team formation" under *minor logistical headache*, but the choice of who works with whom is pedagogically consequential. Group composition shapes who learns from whom, who gets credit, who carries silent labor, and — at the limit — who passes a course (Kyprianidou et al., 2012). When those decisions are made by algorithm rather than by hand, the same set of questions that animates broader debates about AI in high-stakes domains shows up in miniature: Whose values are encoded in the model? Whose data does it use, and with what consent? Can the people affected by it understand what it's doing? (O'Neil, 2016; Akgun & Greenhow, 2022)
 
 Higher education has spent the last decade quietly importing data-driven decision systems — early-warning dashboards, automated tutoring placements, "engagement" analytics drawn from learning-management click streams. Most of these systems run without the consent of the students they classify and without the affected instructors fully understanding how they work. We wanted to take the opposite approach: build something narrow, transparent, opt-in, and explicitly designed to keep the instructor in charge.
 
@@ -50,8 +50,8 @@ We then ran four different models on the cleaned data, deliberately chosen to sp
 
 - **K-Means clustering** — the standard workhorse, fast and interpretable, but it cannot enforce balanced team sizes.
 - **Agglomerative (Ward) clustering** — a hierarchical alternative that produces a dendrogram for instructor inspection and makes no spherical-cluster assumption.
-- **Hungarian Algorithm assignment** — a combinatorial optimization technique from operations research [4]. We used it to enforce that every team contains exactly 3–6 students, a property no standard clustering algorithm guarantees.
-- **Gaussian Mixture Model (GMM)** — a probabilistic model that produces *soft* assignments instead of hard cluster labels [5], which lets us flag ambiguous students for human review.
+- **Hungarian Algorithm assignment** — a combinatorial optimization technique from operations research (Kuhn, 1955). We used it to enforce that every team contains exactly 3–6 students, a property no standard clustering algorithm guarantees.
+- **Gaussian Mixture Model (GMM)** — a probabilistic model that produces *soft* assignments instead of hard cluster labels (Bishop, 2006), which lets us flag ambiguous students for human review.
 
 The first three models were applied to a *similarity* feature set (availability + work style) — the question they answer is "who has compatible schedules and styles?" GMM was applied to a *complementarity* feature set (skills only) — its question is "what are the latent skill archetypes in this cohort, and how can we mix them?"
 
@@ -81,7 +81,7 @@ This is a pedagogically important finding. It means that within this cohort, stu
 
 **3. GPA is not a neutral feature.** We were curious whether including GPA in the feature set would meaningfully change team assignments. We ran K-Means with and without `gpa_band` and compared the resulting cluster labels using the Adjusted Rand Index — a standard measure of how similar two partitions are, where 1.0 is identical and 0.0 is random. The score was **0.34** — moderately low. Removing GPA actually *improved* the schedule-overlap metric slightly (0.628 versus 0.604). In other words, GPA was actively pulling the clustering away from its primary objective.
 
-This was the most ethically significant finding in the project. GPA is a demographically loaded variable in the U.S. educational system [6, 7] — correlated with socioeconomic status, prior preparation, and access to academic support. A modeling decision as innocuous-sounding as "let's include GPA as one of fifty features" turned out to reshape teams measurably, and not in a direction that helped. We had assumed GPA would be a passive ingredient. It wasn't.
+This was the most ethically significant finding in the project. GPA is a demographically loaded variable in the U.S. educational system (Eubanks, 2018; Selbst et al., 2019) — correlated with socioeconomic status, prior preparation, and access to academic support. A modeling decision as innocuous-sounding as "let's include GPA as one of fifty features" turned out to reshape teams measurably, and not in a direction that helped. We had assumed GPA would be a passive ingredient. It wasn't.
 
 **4. GMM produced sharp, not soft, archetypes.** One of the design promises of GMM is that it returns *probabilistic* assignments — a vector of probabilities over latent components for each student — and we built an "ambiguity flag" intended to surface students whose maximum component probability fell below 0.60. In a larger or more diverse cohort, those flagged students would get instructor review.
 
@@ -97,9 +97,9 @@ This is not a failure of the algorithm; it is a property of the data. With 31 st
 
 There are three ethical concerns worth surfacing — because the technical choices we made each have a social consequence, and because pretending otherwise would be dishonest about what we built.
 
-**Self-report bias is a fairness problem, not just a measurement problem.** Students from cultures or backgrounds where confidence-expression is discouraged — or where humility is valued for its own sake — will systematically under-rate themselves on a 1-to-5 Likert scale [3]. An algorithm that takes those self-ratings at face value will route those students into "low-skill" team slots and route their more-confident peers into leadership-tagged ones. The Hungarian Algorithm's size-balancing constraint mitigates this by *forcing* mixed teams, and our skill-coverage metric specifically asks whether *anyone* on the team meets each threshold, not whether *everyone* does. But the underlying bias remains in the data. We can't fix it; we can only refuse to amplify it.
+**Self-report bias is a fairness problem, not just a measurement problem.** Students from cultures or backgrounds where confidence-expression is discouraged — or where humility is valued for its own sake — will systematically under-rate themselves on a 1-to-5 Likert scale (Akgun & Greenhow, 2022). An algorithm that takes those self-ratings at face value will route those students into "low-skill" team slots and route their more-confident peers into leadership-tagged ones. The Hungarian Algorithm's size-balancing constraint mitigates this by *forcing* mixed teams, and our skill-coverage metric specifically asks whether *anyone* on the team meets each threshold, not whether *everyone* does. But the underlying bias remains in the data. We can't fix it; we can only refuse to amplify it.
 
-**Algorithmic recommendations create anchoring pressure.** Even with explicit human-in-the-loop framing, an instructor presented with a confident-looking algorithmic output is more likely to accept it than to override it [3]. To counter this, we deliberately produce *multiple* configurations rather than one, surface *ambiguity flags* from GMM (students with soft membership probability below 0.60), and present per-metric trade-offs rather than a single composite score. The point is to make scrutiny structurally easier than rubber-stamping.
+**Algorithmic recommendations create anchoring pressure.** Even with explicit human-in-the-loop framing, an instructor presented with a confident-looking algorithmic output is more likely to accept it than to override it (Akgun & Greenhow, 2022). To counter this, we deliberately produce *multiple* configurations rather than one, surface *ambiguity flags* from GMM (students with soft membership probability below 0.60), and present per-metric trade-offs rather than a single composite score. The point is to make scrutiny structurally easier than rubber-stamping.
 
 **Anonymous data isn't always anonymous.** Our raw survey data was collected anonymously — no names, no emails, no student IDs. But the Google Forms export included an exact-second timestamp for each submission, and in a class of 31 students who know each other, *"who submitted at 11:30 AM on Wednesday"* can identify someone. We treat the timestamp as a quasi-identifier: the raw file stays local and is never published, and the processed file is row-shuffled with a fixed random seed before being saved, breaking the correlation between row position and submission order. Reproducibility is preserved; re-identification is not.
 
@@ -129,26 +129,26 @@ We started this project asking whether a data-driven tool could replace instruct
 
 ## References
 
-[1] M. Kyprianidou, S. Demetriadis, T. Tsiatsos, and A. Pombortsis, "Group formation based on learning styles: can it improve students' teamwork?" *Educational Technology Research and Development*, vol. 60, pp. 83–110, 2012.
+Akgun, S., & Greenhow, C. (2022). Artificial intelligence in education: Addressing ethical challenges in K-12 settings. *AI and Ethics*, *2*, 431–440. https://pmc.ncbi.nlm.nih.gov/articles/PMC8455229/
 
-[2] C. O'Neil, *Weapons of Math Destruction: How Big Data Increases Inequality and Threatens Democracy.* Crown, 2016.
+Bishop, C. M. (2006). *Pattern recognition and machine learning*. Springer.
 
-[3] S. Akgun and C. Greenhow, "Artificial intelligence in education: Addressing ethical challenges in K-12 settings," *AI and Ethics*, vol. 2, 2022. Available: https://pmc.ncbi.nlm.nih.gov/articles/PMC8455229/
+Eubanks, V. (2018). *Automating inequality: How high-tech tools profile, police, and punish the poor*. St. Martin's Press.
 
-[4] H. W. Kuhn, "The Hungarian method for the assignment problem," *Naval Research Logistics Quarterly*, vol. 2, no. 1–2, pp. 83–97, 1955.
+Kuhn, H. W. (1955). The Hungarian method for the assignment problem. *Naval Research Logistics Quarterly*, *2*(1–2), 83–97. https://doi.org/10.1002/nav.3800020109
 
-[5] C. M. Bishop, *Pattern Recognition and Machine Learning.* Springer, 2006. (Chapter 9 — Mixture Models and EM.)
+Kyprianidou, M., Demetriadis, S., Tsiatsos, T., & Pombortsis, A. (2012). Group formation based on learning styles: Can it improve students' teamwork? *Educational Technology Research and Development*, *60*(1), 83–110. https://doi.org/10.1007/s11423-011-9215-4
 
-[6] V. Eubanks, *Automating Inequality: How High-Tech Tools Profile, Police, and Punish the Poor.* St. Martin's Press, 2018.
+O'Neil, C. (2016). *Weapons of math destruction: How big data increases inequality and threatens democracy*. Crown.
 
-[7] A. D. Selbst, danah boyd, S. A. Friedler, S. Venkatasubramanian, and J. Vertesi, "Fairness and abstraction in sociotechnical systems," in *Proc. Conference on Fairness, Accountability, and Transparency (FAT\*)*, pp. 59–68, 2019.
+Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., Blondel, M., Prettenhofer, P., Weiss, R., Dubourg, V., Vanderplas, J., Passos, A., Cournapeau, D., Brucher, M., Perrot, M., & Duchesnay, E. (2011). Scikit-learn: Machine learning in Python. *Journal of Machine Learning Research*, *12*, 2825–2830.
 
-[8] F. Pedregosa et al., "Scikit-learn: Machine Learning in Python," *Journal of Machine Learning Research*, vol. 12, pp. 2825–2830, 2011.
+Selbst, A. D., Boyd, D., Friedler, S. A., Venkatasubramanian, S., & Vertesi, J. (2019). Fairness and abstraction in sociotechnical systems. In *Proceedings of the Conference on Fairness, Accountability, and Transparency* (pp. 59–68). https://doi.org/10.1145/3287560.3287598
 
 ---
 
 ### Tools and Acknowledgments
 
-Built in Python with scikit-learn (K-Means, Agglomerative, GMM, PCA, evaluation metrics), SciPy (Hungarian Algorithm via `linear_sum_assignment`), pandas, NumPy, matplotlib, and seaborn. Full source, preprocessing pipeline, model wrappers, evaluation code, and Jupyter notebooks are available at [github.com/HPAuncc/teammate-matcher](https://github.com/HPAuncc/teammate-matcher). Claude (Anthropic) was used as a coding assistant throughout development.
+Built in Python with scikit-learn (Pedregosa et al., 2011) for K-Means, Agglomerative, GMM, PCA, and evaluation metrics, and SciPy for the Hungarian Algorithm via `linear_sum_assignment`. Additional tools used: pandas, NumPy, matplotlib, and seaborn. Full source, preprocessing pipeline, model wrappers, evaluation code, and Jupyter notebooks are available at [github.com/HPAuncc/teammate-matcher](https://github.com/HPAuncc/teammate-matcher). Claude (Anthropic) was used as a coding assistant throughout development.
 
 *Special thanks to Aileen Benedict and Jordan Blekking (UNC Charlotte School of Data Science) for advising this project, and to the 31 anonymous DTSC 2302 students who took the survey.*
