@@ -93,7 +93,11 @@ teammate-matcher/
 │   ├── evaluation_metrics.csv        # tabular metrics
 │   ├── technical_report_thumbnail.png
 │   ├── portfolio_post_thumbnail.png
-│   └── team_assignments/             # ⛔ gitignored
+│   └── team_assignments/             # per-model team rosters
+│       ├── kmeans_teams.csv
+│       ├── agglomerative_teams.csv
+│       ├── hungarian_teams.csv
+│       └── gmm_teams.csv
 ├── proposal.md                       # original early proposal (kept as history)
 ├── portfolio_post.md                 # public-facing write-up
 ├── technical_report.md               # full technical documentation

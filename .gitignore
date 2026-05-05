@@ -6,9 +6,6 @@ data/raw_survey_responses.csv
 data/raw_survey_data.csv
 data/raw/
 
-# Team assignment outputs contain row indices tied to submission order
-outputs/team_assignments/*.csv
-
 # AI developer context — internal notes, not for public repo
 CLAUDE.md
 
