@@ -1055,7 +1055,11 @@ teammate-matcher/
     ├── poster_comparison_table.png       # poster-ready table
     ├── gmm_ambiguity.png                 # GMM soft-assignment heatmap
     ├── evaluation_metrics.csv            # tabular metrics
-    └── team_assignments/                 # gitignored
+    └── team_assignments/                 # per-model team rosters
+        ├── kmeans_teams.csv
+        ├── agglomerative_teams.csv
+        ├── hungarian_teams.csv
+        └── gmm_teams.csv
 ```
 
 ### Reproducibility
