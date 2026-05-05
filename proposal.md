@@ -1,5 +1,13 @@
 # Final Project Proposal: Group Project Teammate Matcher
 
+> **Note:** This is the original project proposal, written before the
+> survey was deployed and the analysis run. Findings, methods, and final
+> claims may have evolved during execution — see
+> [`technical_report.md`](technical_report.md) for the canonical write-up
+> of the completed project, and
+> [`portfolio_post.md`](portfolio_post.md) for the public-facing version.
+> This file is preserved as project history.
+
 ## Problem, Motivation & Research Questions
 
 The success of group projects in academic settings is heavily dependent on team
