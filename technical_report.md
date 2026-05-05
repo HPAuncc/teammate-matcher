@@ -1024,8 +1024,9 @@ finding: **the choice of "best" model depends on what you optimize for.**
 
 ## 10. Code Organization & Reproducibility
 
-The full repository is available at
-[github.com/HPAuncc/teammate-matcher](https://github.com/HPAuncc/teammate-matcher).
+This section documents the structure of the source code and how to
+reproduce every result in the report. The full repository link appears
+at the end of the report (Section 11).
 
 ### Structure
 
